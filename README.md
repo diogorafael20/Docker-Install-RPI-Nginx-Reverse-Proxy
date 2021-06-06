@@ -67,7 +67,7 @@ services:
       - ./data/mariadb:/config
 
 
-## Change "ADDUSER" and "CHANGEPASSWORD" credentials on lines 42 and 43.
+## Change "ADDUSER" and "CHANGEPASSWORD" credentials (lines 42 and 43).
 
 ## Then run it
 
