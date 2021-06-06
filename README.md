@@ -1,11 +1,11 @@
 ## Docker Install // RPI-Nginx-Reverse-Proxy ##
 
 
-##Installing docker
+## Installing docker
 
 $ curl -sSL https://get.docker.com | sh
 
-##Installing Docker Compose
+## Installing Docker Compose
 
 $ sudo apt-get install libffi-dev libssl-dev
   sudo apt install python3-dev
@@ -13,15 +13,15 @@ $ sudo apt-get install libffi-dev libssl-dev
   sudo pip3 install docker-compose
   sudo systemctl enable docker
 
-##Command to check if docker is alive
+## Command to check if docker is alive
 
 docker run hello-world
 
-##Create docker compose file
+## Create docker compose file
 
 sudo nano docker-compose.yml
 
-##paste the following code:
+## Paste the following code:
 
 version: "3"
 services:
@@ -67,9 +67,9 @@ services:
       - ./data/mariadb:/config
 
 
-##change "ADDUSER" and "CHANGEPASSWORD" credentials on lines 42 and 43.
+## Change "ADDUSER" and "CHANGEPASSWORD" credentials on lines 42 and 43.
 
-##then run it
+## Then run it
 
 $ run docker-compose up -d
 
