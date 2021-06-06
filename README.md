@@ -21,7 +21,7 @@ docker run hello-world
 
 sudo nano docker-compose.yml
 
-## paste the following code:
+##paste the following code:
 
 version: "3"
 services:
