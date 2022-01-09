@@ -1,4 +1,4 @@
-## Docker Install // RPI-Nginx-Reverse-Proxy ##
+## Docker Install // RPI-Nginx-Reverse-Proxy RPI BUG FIXED ##
 
 
 ## Installing docker
