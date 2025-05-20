@@ -66,9 +66,6 @@ services:
     volumes:
       - ./data/mariadb:/config
 
-
-## Change "ADDUSER" and "CHANGEPASSWORD" credentials (lines 42 and 43).
-
 ## Then run it
 
 $ run docker-compose up -d
