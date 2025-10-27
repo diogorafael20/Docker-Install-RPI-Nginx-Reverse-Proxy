@@ -98,6 +98,7 @@ Password: changeme
 Serás solicitado a definir novas credenciais no primeiro login.
 
  Estrutura de Diretórios
+ 
 RPI-Nginx-Reverse-Proxy/
 ├── docker-compose.yml
 ├── data/
