@@ -99,12 +99,14 @@ Serás solicitado a definir novas credenciais no primeiro login.
 
  Estrutura de Diretórios
  
+Estrutura de Diretórios
 RPI-Nginx-Reverse-Proxy/
 ├── docker-compose.yml
 ├── data/
 │   ├── nginx-proxy-manager/
 │   └── mariadb/
 └── letsencrypt/
+
 
  Notas:
 
