@@ -24,6 +24,7 @@ Confirma a instalação:
 docker-compose version
 
  3. Criar o ficheiro docker-compose.yml
+
 sudo nano docker-compose.yml
 
 
