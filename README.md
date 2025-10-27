@@ -1,56 +1,61 @@
-## Docker Install // RPI-Nginx-Reverse-Proxy RPI BUG FIXED ##
+RPI-Nginx-Reverse-Proxy — Docker Setup (Raspberry Pi)
 
-## Installing docker
+Configuração completa e funcional do Nginx Proxy Manager em Docker num Raspberry Pi.
+Inclui MariaDB como base de dados e correções específicas para bugs conhecidos em ARM-based systems (RPI).
 
-$ curl -sSL https://get.docker.com | sh
+ 1. Instalar o Docker
+curl -sSL https://get.docker.com | sh
 
-## Installing Docker Compose
 
-$ sudo apt-get install libffi-dev libssl-dev
-  sudo apt install python3-dev
-  sudo apt-get install -y python3 python3-pip
-  sudo pip3 install docker-compose
-  sudo systemctl enable docker
+Verifica se o Docker foi instalado corretamente:
 
-## Command to check if docker is alive
+sudo docker run hello-world
 
-docker run hello-world
+ 2. Instalar o Docker Compose
+sudo apt-get install libffi-dev libssl-dev -y
+sudo apt-get install python3-dev -y
+sudo apt-get install -y python3 python3-pip
+sudo pip3 install docker-compose
+sudo systemctl enable docker
 
-## Create docker compose file
 
+Confirma a instalação:
+
+docker-compose version
+
+ 3. Criar o ficheiro docker-compose.yml
 sudo nano docker-compose.yml
 
-## Paste the following code:
+
+Copia o seguinte conteúdo:
 
 version: "3"
+
 services:
   app:
-    image: 'jc21/nginx-proxy-manager:latest'
+    image: jc21/nginx-proxy-manager:latest
     restart: always
     ports:
-      # Public HTTP Port:
-      - '80:80'
-      # Public HTTPS Port:
-      - '443:443'
-      # Admin Web Port:
-      - '81:81'
+      - "80:80"    # HTTP público
+      - "443:443"  # HTTPS público
+      - "81:81"    # Interface de administração
     environment:
-      # These are the settings to access your db
       DB_MYSQL_HOST: "db"
       DB_MYSQL_PORT: 3306
       DB_MYSQL_USER: "ADDUSER"
       DB_MYSQL_PASSWORD: "CHANGEPASSWORD"
       DB_MYSQL_NAME: "npm"
-      # If you would rather use Sqlite uncomment this
-      # and remove all DB_MYSQL_* lines above
+      # Caso pretendas usar SQLite em vez de MySQL, remove as variáveis acima
+      # e descomenta a linha seguinte:
       # DB_SQLITE_FILE: "/data/database.sqlite"
-      # Uncomment this if IPv6 is not enabled on your host
-      # DISABLE_IPV6: 'true'
+      # Descomenta esta linha se o IPv6 não estiver ativo no sistema:
+      # DISABLE_IPV6: "true"
     volumes:
       - ./data/nginx-proxy-manager:/data
       - ./letsencrypt:/etc/letsencrypt
     depends_on:
       - db
+
   db:
     image: ghcr.io/linuxserver/mariadb
     restart: unless-stopped
@@ -65,12 +70,62 @@ services:
     volumes:
       - ./data/mariadb:/config
 
-## Then run it
 
-$ run docker-compose up -d
+Nota: substitui ADDUSER, CHANGEPASSWORD, changeuser, changepass e changeme
 
-Default credentials:
+ 4. Iniciar o ambiente Docker
+sudo docker-compose up -d
+
+
+Verifica se os serviços estão a correr corretamente:
+
+sudo docker ps
+
+ 5. Credenciais por defeito
+
+Acede ao painel através de:
+
+http://<IP_DO_RASPBERRY>:81
+
+
+Credenciais iniciais:
 
 Email:    admin@example.com
 Password: changeme
 
+
+Serás solicitado a definir novas credenciais no primeiro login.
+
+ Estrutura de Diretórios
+RPI-Nginx-Reverse-Proxy/
+├── docker-compose.yml
+├── data/
+│   ├── nginx-proxy-manager/
+│   └── mariadb/
+└── letsencrypt/
+
+ Notas:
+
+Testado em Raspberry Pi 3/4/5 com Raspberry Pi OS (64-bit).
+
+Corrigidos bugs conhecidos relacionados com a arquitetura ARM e permissões nos volumes.
+
+O diretório ./letsencrypt deve manter persistência entre reinicializações para não perder certificados.
+
+O parâmetro DISABLE_IPV6 pode ser ativado em redes que não suportem IPv6, evitando falhas de binding.
+
+ Diagnóstico rápido
+
+Ver logs da aplicação:
+sudo docker-compose logs -f app
+
+Reiniciar apenas o Nginx Proxy Manager:
+sudo docker-compose restart app
+
+Remover tudo:
+sudo docker-compose down -v
+
+Para manter o sistema atualizado:
+sudo docker pull jc21/nginx-proxy-manager:latest
+sudo docker pull ghcr.io/linuxserver/mariadb
+sudo docker-compose up -
