@@ -1,6 +1,5 @@
 ## Docker Install // RPI-Nginx-Reverse-Proxy RPI BUG FIXED ##
 
-
 ## Installing docker
 
 $ curl -sSL https://get.docker.com | sh
