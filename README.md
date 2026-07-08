@@ -1,139 +1,206 @@
-RPI-Nginx-Reverse-Proxy — Docker Setup (Raspberry Pi)
+# RPI-Nginx-Proxy-Manager
 
-Configuração completa e funcional do Nginx Proxy Manager em Docker num Raspberry Pi.
-Inclui MariaDB como base de dados e correções específicas para bugs conhecidos em sistemas ARM (Raspberry Pi).
+Configuração do **Nginx Proxy Manager** em Docker para Raspberry Pi (3, 4 e 5), utilizando **SQLite** como base de dados. Esta abordagem é simples, leve e suficiente para a maioria dos ambientes domésticos e homelabs, eliminando a necessidade de um container adicional de MariaDB.
 
-1. Instalar o Docker
-------------------------------------------------------------
+---
 
-curl -sSL https://get.docker.com | sh
+## 1. Atualizar o sistema
 
-Verifica se o Docker foi instalado corretamente:
+Antes de instalar o Docker, atualizar o sistema operativo:
 
-sudo docker run hello-world
+```bash
+sudo apt update
+sudo apt full-upgrade -y
+sudo reboot
+```
 
+Após o reinício:
 
-2. Instalar o Docker Compose
-------------------------------------------------------------
+```bash
+sudo apt update
+```
 
-sudo apt-get install libffi-dev libssl-dev -y
-sudo apt-get install python3-dev -y
-sudo apt-get install -y python3 python3-pip
-sudo pip3 install docker-compose
-sudo systemctl enable docker
+---
 
-Confirma a instalação:
+## 2. Instalar o Docker
 
-docker-compose version
+Instalar a versão oficial do Docker:
 
+```bash
+curl -fsSL https://get.docker.com | sh
+```
 
-3. Criar o ficheiro docker-compose.yml
-------------------------------------------------------------
+Adicionar o utilizador ao grupo `docker` para executar comandos sem `sudo`:
 
-sudo nano docker-compose.yml
+```bash
+sudo usermod -aG docker $USER
+newgrp docker
+```
 
-Copia o seguinte conteúdo:
-"
-version: "3"
+Verificar que tudo ficou corretamente instalado:
 
-services:
-  app:
-    image: jc21/nginx-proxy-manager:latest
-    restart: always
-    ports:
-      - "80:80"    # HTTP público
-      - "443:443"  # HTTPS público
-      - "81:81"    # Interface de administração
-    environment:
-      DB_MYSQL_HOST: "db"
-      DB_MYSQL_PORT: 3306
-      DB_MYSQL_USER: "ADDUSER"
-      DB_MYSQL_PASSWORD: "CHANGEPASSWORD"
-      DB_MYSQL_NAME: "npm"
-      # Caso pretendas usar SQLite em vez de MySQL, remove as variáveis acima
-      # e descomenta a linha seguinte:
-      # DB_SQLITE_FILE: "/data/database.sqlite"
-      # Descomenta esta linha se o IPv6 não estiver ativo no sistema:
-      # DISABLE_IPV6: "true"
-    volumes:
-      - ./data/nginx-proxy-manager:/data
-      - ./letsencrypt:/etc/letsencrypt
-    depends_on:
-      - db
+```bash
+docker version
+docker compose version
+docker run hello-world
+```
 
-  db:
-    image: ghcr.io/linuxserver/mariadb
-    restart: unless-stopped
-    environment:
-      PUID: 1001
-      PGID: 1001
-      TZ: "Europe/London"
-      MYSQL_ROOT_PASSWORD: "changeme"
-      MYSQL_DATABASE: "npm"
-      MYSQL_USER: "changeuser"
-      MYSQL_PASSWORD: "changepass"
-    volumes:
-      - ./data/mariadb:/config
-"
-Nota: substitui ADDUSER, CHANGEPASSWORD, changeuser, changepass e changeme
+---
 
-4. Iniciar o ambiente Docker
-------------------------------------------------------------
+## 3. Criar a estrutura de diretórios
 
-sudo docker-compose up -d
+Criar uma pasta para armazenar a configuração do Nginx Proxy Manager:
 
-Verifica se os serviços estão a correr corretamente:
+```bash
+mkdir -p ~/docker/nginx-proxy-manager
+cd ~/docker/nginx-proxy-manager
+```
 
-sudo docker ps
+---
 
+## 4. Criar o ficheiro compose.yml
 
-5. Credenciais por defeito
-------------------------------------------------------------
+Criar o ficheiro:
 
-Acede ao painel através de:
+```bash
+nano compose.yml
+```
 
-http://<IP_DO_RASPBERRY>:81
+Copiar para o ficheiro o conteúdo apresentado abaixo.
+
+### compose.yml
+
+(ver ficheiro `compose.yml` deste repositório)
+
+Guardar o ficheiro (`Ctrl + O`, `Enter`) e sair do editor (`Ctrl + X`).
+
+---
+
+## 5. Iniciar o container
+
+Na pasta onde foi criado o `compose.yml`, executar:
+
+```bash
+docker compose up -d
+```
+
+Confirmar que o container foi iniciado corretamente:
+
+```bash
+docker ps
+```
+
+---
+
+## 6. Primeiro acesso
+
+Abrir o navegador e aceder a:
+
+```
+http://IP_DO_RASPBERRY:81
+```
+
+Exemplo:
+
+```
+http://192.168.1.100:81
+```
 
 Credenciais iniciais:
 
-Email:    admin@example.com
-Password: changeme
+- **Email:** `admin@example.com`
+- **Password:** `changeme`
 
-Serás solicitado a definir novas credenciais no primeiro login.
+No primeiro acesso será obrigatório alterar o email e a palavra-passe.
 
+---
 
-Estrutura de Diretórios
-------------------------------------------------------------
+## Estrutura de diretórios
 
-RPI-Nginx-Reverse-Proxy/
-├── docker-compose.yml
+Após o primeiro arranque, a estrutura ficará semelhante a:
+
+```
+nginx-proxy-manager/
+├── compose.yml
 ├── data/
-│   ├── nginx-proxy-manager/
-│   └── mariadb/
 └── letsencrypt/
+```
 
+As pastas `data` e `letsencrypt` são criadas automaticamente.
 
-Notas
-------------------------------------------------------------
+- `data` contém toda a configuração e a base de dados SQLite.
+- `letsencrypt` contém os certificados SSL.
 
-- Testado em Raspberry Pi 3, 4 e 5 com Raspberry Pi OS (64-bit)
-- Corrigidos bugs conhecidos relacionados com a arquitetura ARM e permissões nos volumes
-- O diretório ./letsencrypt deve manter persistência entre reinicializações para não perder certificados
+Não eliminar estas pastas caso se pretenda manter a configuração.
 
+---
 
-Diagnóstico rápido
-------------------------------------------------------------
+## Atualizar o Nginx Proxy Manager
 
-Ver logs da aplicação:
-sudo docker-compose logs -f app
+```bash
+cd ~/docker/nginx-proxy-manager
+docker compose pull
+docker compose up -d
+```
 
-Reiniciar apenas o Nginx Proxy Manager:
-sudo docker-compose restart app
+---
 
-Remover tudo:
-sudo docker-compose down -v
+## Comandos úteis
 
-Atualizar o sistema e imagens Docker:
-sudo docker pull jc21/nginx-proxy-manager:latest
-sudo docker pull ghcr.io/linuxserver/mariadb
-sudo docker-compose up -d
+Ver logs:
+
+```bash
+docker compose logs -f
+```
+
+Reiniciar:
+
+```bash
+docker compose restart
+```
+
+Parar:
+
+```bash
+docker compose stop
+```
+
+Voltar a iniciar:
+
+```bash
+docker compose start
+```
+
+Remover apenas os containers:
+
+```bash
+docker compose down
+```
+
+Remover completamente o container e todos os dados:
+
+```bash
+docker compose down -v
+```
+
+---
+
+## Atualizar o Raspberry Pi
+
+```bash
+sudo apt update
+sudo apt full-upgrade -y
+sudo apt autoremove -y
+```
+
+---
+
+## Notas
+
+- Compatível com Raspberry Pi 3, 4 e 5.
+- Testado em Raspberry Pi OS Bookworm (64-bit).
+- Utiliza SQLite como base de dados.
+- Não necessita de MariaDB nem MySQL.
+- Os certificados Let's Encrypt permanecem após atualizações e reinicializações.
+- Apenas as portas 80 e 443 devem ser expostas à Internet.
+- Recomenda-se manter a porta 81 acessível apenas na rede local.
